@@ -1,2 +1,4 @@
 docs-dist/
 server.*.log
+
+node_modules/
