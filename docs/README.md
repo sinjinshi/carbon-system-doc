@@ -1,0 +1,123 @@
+# Carbon Architecture Docs
+
+欢迎来到 Carbon Architecture 文档。
+
+## 快速开始
+
+```bash
+pnpm docs:serve
+```
+
+打开终端输出中的本地地址即可预览文档。启动前会自动刷新左侧目录。
+
+## 常用操作速览
+
+| 操作 | 命令或规则 |
+| --- | --- |
+| 本地预览 | `pnpm docs:serve` |
+| 手动刷新目录 | `pnpm docs:sidebar` |
+| 生成发布产物 | `pnpm docs:prepare` |
+| 启用提交前自动刷新目录 | `pnpm hooks:install` |
+| 归档文档 | 文件或目录名以 `_` 开头 |
+| 推送后自动部署 | 推送到 `main` 或 `master` 分支 |
+
+发布时会上传 `docs-dist/`，不会直接上传 `docs/`。`docs-dist/` 会在生成时自动排除以下划线开头的归档文件或目录。
+
+## 如何修改文档
+
+1. 在 `docs/` 目录下修改或新增 Markdown 文件。
+2. 如果是架构说明类内容，建议放到 `docs/01-项目架构说明/`。
+3. 如果是术语、规范、参考资料，建议放到 `docs/reference/`。
+4. 每个 Markdown 文件建议使用一个一级标题，例如 `# 项目概览`，左侧目录会优先读取这个标题。
+
+## 如何归档文档
+
+暂时使用“名称以下划线开头”的方式判断归档内容。
+
+例如：
+
+```text
+docs/guide/_old-design.md
+docs/_archive/
+docs/reference/_legacy-api.md
+```
+
+归档后的文档会被自动屏蔽：
+
+- 不会出现在 `docs/_sidebar.md` 左侧目录中。
+- 不会进入 `docs-dist/` 发布产物。
+- GitHub Pages 自动部署时不会发布这些归档文件。
+
+Docsify 必需的保留文件不会被当作归档处理，例如 `docs/_sidebar.md` 和 `docs/_navbar.md`。
+
+## 更新目录
+
+左侧目录 `docs/_sidebar.md` 不需要手动维护。
+
+本地预览时会自动更新：
+
+```bash
+pnpm docs:serve
+```
+
+也可以单独手动生成：
+
+```bash
+pnpm docs:sidebar
+```
+
+如果你想在提交前自动刷新目录，先执行一次：
+
+```bash
+pnpm hooks:install
+```
+
+之后每次 `git commit` 前都会自动生成并暂存 `docs/_sidebar.md`。
+
+## 准备发布产物
+
+发布前会生成 `docs-dist/`：
+
+```bash
+pnpm docs:prepare
+```
+
+这个命令会先刷新目录，再复制 `docs/` 中可发布的内容到 `docs-dist/`，并排除以下划线开头的归档文件或目录。
+
+## 提交和推送
+
+```bash
+git status
+git add .
+git commit -m "docs: update documentation"
+git push
+```
+
+当前 GitHub Actions 配置会监听 `main` 和 `master` 分支。推送到这些分支后，会自动触发部署。
+
+## 自动部署
+
+部署流程定义在 `.github/workflows/pages.yml`：
+
+1. 检出仓库代码。
+2. 运行 `npm run docs:prepare` 自动生成目录和发布产物。
+3. 上传 `docs-dist/` 目录作为 GitHub Pages 静态资源。
+4. 发布到 GitHub Pages。
+
+首次使用时，需要在 GitHub 仓库设置中将 Pages 的 Source 设置为 `GitHub Actions`。
+
+## 文档结构
+
+- `docs/README.md`：文档首页
+- `docs/_sidebar.md`：自动生成的左侧目录
+- `docs/_navbar.md`：顶部导航
+- `docs/01-项目架构说明/`：项目架构说明
+- `docs/reference/`：参考资料
+- `docs-dist/`：自动生成的发布产物
+- `scripts/generate-sidebar.mjs`：目录生成脚本
+- `scripts/prepare-docs.mjs`：发布产物生成脚本
+- `.github/workflows/pages.yml`：GitHub Pages 自动部署流程
+
+## 下一步
+
+从 [项目概览](01-项目架构说明/overview.md) 开始补充你的架构文档。

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Carbon Architecture documentation">
+  <title>Carbon Architecture Docs</title>
+  <!-- Theme: Simple -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+  <style>
+    html[data-authenticated="false"] #app {
+      display: none;
+    }
+
+    .access-gate {
+      align-items: center;
+      background: #f7f8fb;
+      color: #172033;
+      display: flex;
+      inset: 0;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      position: fixed;
+      z-index: 9999;
+    }
+
+    .access-gate[hidden] {
+      display: none;
+    }
+
+    .access-panel {
+      background: #fff;
+      border: 1px solid #d9deea;
+      border-radius: 8px;
+      box-shadow: 0 18px 60px rgb(23 32 51 / 12%);
+      max-width: 360px;
+      padding: 28px;
+      width: 100%;
+    }
+
+    .access-panel h1 {
+      font-size: 22px;
+      font-weight: 650;
+      margin: 0 0 8px;
+    }
+
+    .access-panel p {
+      color: #586174;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+
+    .access-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .access-field label {
+      color: #364154;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .access-field input {
+      border: 1px solid #c7cedd;
+      border-radius: 6px;
+      font: inherit;
+      padding: 10px 12px;
+    }
+
+    .access-field input:focus {
+      border-color: #4f6bed;
+      box-shadow: 0 0 0 3px rgb(79 107 237 / 16%);
+      outline: none;
+    }
+
+    .access-submit {
+      background: #172033;
+      border: 0;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+      margin-top: 16px;
+      padding: 10px 14px;
+      width: 100%;
+    }
+
+    .access-submit:hover {
+      background: #26324a;
+    }
+
+    .access-error {
+      color: #b42318;
+      font-size: 13px;
+      min-height: 20px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="access-gate" id="access-gate">
+    <form class="access-panel" id="access-form">
+      <h1>访问验证</h1>
+      <p>请输入访问码后继续查看文档。</p>
+      <div class="access-field">
+        <label for="access-code">访问码</label>
+        <input id="access-code" name="access-code" type="password" autocomplete="current-password" autofocus>
+      </div>
+      <button class="access-submit" type="submit">进入文档</button>
+      <div class="access-error" id="access-error" aria-live="polite"></div>
+    </form>
+  </div>
+  <div id="app">Loading...</div>
+  <script>
+    document.documentElement.dataset.authenticated = 'false';
+
+    window.$docsify = {
+      name: 'Carbon Architecture',
+      repo: '',
+      loadSidebar: true,
+      loadNavbar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: 'Search docs',
+        noData: 'No results',
+        depth: 4,
+        hideOtherSidebarContent: false
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        errorText: 'Error',
+        successText: 'Copied'
+      }
+    };
+  </script>
+  <script>
+    (function () {
+      var accessHash = 'fe91a760983d401d9b679fb092b689488d1f46d92f3af5e9e93363326f3e8aa4';
+      var sessionKey = 'carbon_arch_docs_access';
+      var scripts = [
+        'https://cdn.jsdelivr.net/npm/docsify@4',
+        'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js',
+        'https://cdn.jsdelivr.net/npm/docsify-copy-code@2'
+      ];
+      var gate = document.getElementById('access-gate');
+      var form = document.getElementById('access-form');
+      var input = document.getElementById('access-code');
+      var error = document.getElementById('access-error');
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var script = document.createElement('script');
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      function loadDocsify() {
+        scripts.reduce(function (chain, src) {
+          return chain.then(function () {
+            return loadScript(src);
+          });
+        }, Promise.resolve()).catch(function () {
+          error.textContent = '文档资源加载失败，请稍后重试。';
+        });
+      }
+
+      function unlock() {
+        sessionStorage.setItem(sessionKey, accessHash);
+        document.documentElement.dataset.authenticated = 'true';
+        gate.hidden = true;
+        loadDocsify();
+      }
+
+      function toHex(buffer) {
+        return Array.prototype.map.call(new Uint8Array(buffer), function (byte) {
+          return byte.toString(16).padStart(2, '0');
+        }).join('');
+      }
+
+      function sha256(value) {
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)).then(toHex);
+      }
+
+      if (sessionStorage.getItem(sessionKey) === accessHash) {
+        unlock();
+        return;
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        error.textContent = '';
+
+        sha256(input.value).then(function (hash) {
+          if (hash === accessHash) {
+            unlock();
+            return;
+          }
+
+          input.value = '';
+          input.focus();
+          error.textContent = '访问码不正确。';
+        }).catch(function () {
+          error.textContent = '当前浏览器不支持访问验证。';
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

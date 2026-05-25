@@ -1,0 +1,4 @@
+#!/bin/sh
+
+node scripts/generate-sidebar.mjs
+git add docs/_sidebar.md
