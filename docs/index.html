@@ -6,7 +6,10 @@
   <meta name="description" content="Carbon Architecture documentation">
   <title>Carbon Architecture Docs</title>
   <!-- Theme: Simple -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+   <!-- <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/lib/themes/buble.css" /> -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/LIGMATV/docsify-theme-github/github.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prism-themes/themes/prism-ghcolors.css">
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css"> -->
   <style>
     html[data-authenticated="false"] #app {
       display: none;
@@ -99,6 +102,85 @@
       min-height: 20px;
       margin-top: 10px;
     }
+
+    .markdown-section pre,
+    .markdown-section pre[data-lang] {
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      color: #24292f;
+    }
+
+    .markdown-section pre > code,
+    .markdown-section pre[data-lang] > code {
+      background: transparent;
+      color: #24292f;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      text-shadow: none;
+    }
+
+    .markdown-section code {
+      background: rgb(175 184 193 / 20%);
+      border-radius: 6px;
+      color: #24292f;
+    }
+
+    .markdown-section pre code {
+      background: transparent;
+    }
+
+    .markdown-section .token.comment,
+    .markdown-section .token.prolog,
+    .markdown-section .token.doctype,
+    .markdown-section .token.cdata {
+      color: #6a737d;
+    }
+
+    .markdown-section .token.punctuation {
+      color: #24292f;
+    }
+
+    .markdown-section .token.property,
+    .markdown-section .token.tag,
+    .markdown-section .token.boolean,
+    .markdown-section .token.number,
+    .markdown-section .token.constant,
+    .markdown-section .token.symbol,
+    .markdown-section .token.deleted {
+      color: #005cc5;
+    }
+
+    .markdown-section .token.selector,
+    .markdown-section .token.attr-name,
+    .markdown-section .token.string,
+    .markdown-section .token.char,
+    .markdown-section .token.builtin,
+    .markdown-section .token.inserted {
+      color: #032f62;
+    }
+
+    .markdown-section .token.operator,
+    .markdown-section .token.entity,
+    .markdown-section .token.url {
+      color: #d73a49;
+    }
+
+    .markdown-section .token.atrule,
+    .markdown-section .token.attr-value,
+    .markdown-section .token.keyword {
+      color: #d73a49;
+    }
+
+    .markdown-section .token.function,
+    .markdown-section .token.class-name {
+      color: #6f42c1;
+    }
+
+    .markdown-section .token.regex,
+    .markdown-section .token.important,
+    .markdown-section .token.variable {
+      color: #e36209;
+    }
   </style>
 </head>
 <body>
@@ -125,6 +207,7 @@
       loadNavbar: true,
       subMaxLevel: 3,
       auto2top: true,
+      executeScript: true,
       search: {
         maxAge: 86400000,
         paths: 'auto',
@@ -146,6 +229,11 @@
       var sessionKey = 'carbon_arch_docs_access';
       var scripts = [
         'https://cdn.jsdelivr.net/npm/docsify@4',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-jsx.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-tsx.min.js',
+        'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js',
         'https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js',
         'https://cdn.jsdelivr.net/npm/docsify-copy-code@2'
       ];
