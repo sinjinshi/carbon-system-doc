@@ -2,7 +2,7 @@
   "scripts": {
     "docs:prepare": "node scripts/generate-sidebar.mjs && node scripts/prepare-docs.mjs",
     "docs:sidebar": "node scripts/generate-sidebar.mjs",
-    "docs:serve": "node scripts/generate-sidebar.mjs && docsify serve docs --port 3000",
+    "docs:serve": "node scripts/generate-sidebar.mjs && node scripts/prepare-docs.mjs && docsify serve docs-dist --port 3000",
     "hooks:install": "git config core.hooksPath .githooks"
   },
   "devDependencies": {
