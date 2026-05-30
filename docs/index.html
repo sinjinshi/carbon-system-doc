@@ -181,6 +181,22 @@
     .markdown-section .token.variable {
       color: #e36209;
     }
+
+    .markdown-section .mermaid {
+      background: #fff;
+      border: 1px solid #d9d9e3;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgb(32 33 35 / 4%);
+      margin: 1.2em 0;
+      overflow-x: auto;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .markdown-section .mermaid svg {
+      height: auto;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -200,6 +216,57 @@
   <script>
     document.documentElement.dataset.authenticated = 'false';
 
+    function escapeMermaidCode(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    var mermaidThemeVariables = {
+      background: '#ffffff',
+      mainBkg: '#f7f7f8',
+      secondBkg: '#e6f4ef',
+      tertiaryColor: '#ffffff',
+      primaryColor: '#f7f7f8',
+      primaryBorderColor: '#10a37f',
+      primaryTextColor: '#202123',
+      secondaryColor: '#e6f4ef',
+      secondaryBorderColor: '#74aa9c',
+      secondaryTextColor: '#202123',
+      tertiaryBorderColor: '#d9d9e3',
+      tertiaryTextColor: '#202123',
+      lineColor: '#10a37f',
+      textColor: '#202123',
+      fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      clusterBkg: '#f7f7f8',
+      clusterBorder: '#d9d9e3',
+      edgeLabelBackground: '#ffffff',
+      noteBkg: '#fff7d6',
+      noteBorderColor: '#f3c969',
+      noteTextColor: '#202123',
+      actorBkg: '#f7f7f8',
+      actorBorder: '#10a37f',
+      actorTextColor: '#202123',
+      actorLineColor: '#d9d9e3',
+      signalColor: '#0f8f70',
+      signalTextColor: '#202123',
+      labelBoxBkgColor: '#f7f7f8',
+      labelBoxBorderColor: '#d9d9e3',
+      labelTextColor: '#202123',
+      loopTextColor: '#202123',
+      activationBkgColor: '#e6f4ef',
+      activationBorderColor: '#10a37f',
+      pie1: '#10a37f',
+      pie2: '#74aa9c',
+      pie3: '#d9d9e3',
+      pie4: '#202123',
+      pie5: '#8e8ea0',
+      pie6: '#ececf1'
+    };
+
     window.$docsify = {
       name: 'Carbon Architecture',
       repo: '',
@@ -208,6 +275,54 @@
       subMaxLevel: 3,
       auto2top: true,
       executeScript: true,
+      markdown: {
+        renderer: {
+          code: function (code, lang) {
+            var language = (lang || '').toLowerCase();
+
+            if (language === 'mermaid' && window.mermaid) {
+              return '<div class="mermaid">' + escapeMermaidCode(code) + '</div>';
+            }
+
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      },
+      plugins: [
+        function (hook) {
+          var isMermaidInitialized = false;
+
+          function initializeMermaid() {
+            if (!window.mermaid || isMermaidInitialized) {
+              return;
+            }
+
+            window.mermaid.initialize({
+              startOnLoad: false,
+              securityLevel: 'strict',
+              theme: 'base',
+              themeVariables: mermaidThemeVariables
+            });
+            isMermaidInitialized = true;
+          }
+
+          hook.ready(initializeMermaid);
+
+          hook.doneEach(function () {
+            initializeMermaid();
+
+            if (!window.mermaid) {
+              return;
+            }
+
+            window.mermaid.run({
+              querySelector: '.mermaid:not([data-processed="true"])'
+            }).catch(function (error) {
+              console.error('Mermaid render failed:', error);
+            });
+          });
+        }
+      ],
       search: {
         maxAge: 86400000,
         paths: 'auto',
@@ -227,6 +342,7 @@
     (function () {
       var accessHash = 'fe91a760983d401d9b679fb092b689488d1f46d92f3af5e9e93363326f3e8aa4';
       var sessionKey = 'carbon_arch_docs_access';
+      var mermaidScript = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
       var scripts = [
         'https://cdn.jsdelivr.net/npm/docsify@4',
         'https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js',
@@ -252,12 +368,20 @@
         });
       }
 
-      function loadDocsify() {
-        scripts.reduce(function (chain, src) {
+      function loadScripts(scriptList) {
+        return scriptList.reduce(function (chain, src) {
           return chain.then(function () {
             return loadScript(src);
           });
-        }, Promise.resolve()).catch(function () {
+        }, Promise.resolve());
+      }
+
+      function loadDocsify() {
+        loadScript(mermaidScript).catch(function () {
+          window.mermaid = null;
+        }).then(function () {
+          return loadScripts(scripts);
+        }).catch(function () {
           error.textContent = '文档资源加载失败，请稍后重试。';
         });
       }

@@ -265,6 +265,7 @@ Audit 管追责。
 
 
 ```
+```
 
 <!-- bad -->
 
@@ -289,3 +290,99 @@ Audit 管追责。
 
 
 
+## 页面结构和缓存问题
+
+
+```tsx
+// app/(dashboard)/devices/page.tsx
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
+import { DevicesPageClient } from "./_components/DevicesPageClient";
+
+// 避免服务端页面缓存，并且页面内的所有请求默认不使用缓存
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  
+  const session = await getSession();
+  await assertPermission('permissionCode');
+
+  return (
+    <DevicesPageClient
+      currentUser={{
+        id: session.userId,
+        tenantId: session.tenantId,
+        permissions: session.permissions,
+      }}
+    />
+  );
+}
+
+```
+
+```jsx
+
+"use client";
+
+
+export function DevicesPageClient({ currentUser }) {
+  const { data, isLoading, mutate } = fetch(
+    ["/api/devices", currentUser.tenantId],
+    fetcher
+  );
+
+  return (
+    <DeviceTable
+      data={data}
+      loading={isLoading}
+      onChanged={() => mutate()}
+    />
+  );
+}
+
+```
+
+
+核心原则
+1. Page 不查业务列表
+
+不要在 page.tsx 里查设备列表、用户列表、订单列表。
+
+否则你会被这些问题困住：
+
+router.back() 不刷新
+Router Cache 命中旧 RSC
+revalidatePath 和 router.refresh 行为不一致
+页面返回数据旧
+
+官方也明确区分了 router.refresh() 和 revalidatePath()：前者清客户端 Router Cache，但不清 Data Cache / Full Route Cache；后者是服务端缓存失效。
+
+你的模式里，业务数据走 CSR，刷新就简单很多：
+
+mutate();              // SWR
+queryClient.invalidateQueries(); // TanStack Query
+2. Page 只传“安全的上下文”
+
+可以传：
+
+{
+  userId,
+  tenantId,
+  orgId,
+  locale,
+  permissions,
+}
+
+不要传：
+
+passwordHash
+accessToken
+完整用户对象
+完整角色对象
+敏感配置
+
+Next 官方也强调 Server Components 下要重新考虑数据暴露边界。
+
+
+
+##  prisma 的 schema 
