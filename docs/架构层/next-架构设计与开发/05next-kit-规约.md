@@ -1,4 +1,4 @@
-# next.js 技术规范 约定和原因
+# next-kit 规约
 
 
 ## server actions  vs Route Handlers todo 
